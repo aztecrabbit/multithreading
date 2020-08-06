@@ -1,3 +1,7 @@
+import datetime
+import os
+import sys
+
 from queue import Queue
 from threading import Thread, RLock
 
@@ -67,26 +71,33 @@ class MultiThread:
 
 	def start_thread(self):
 		while True:
-			item = self._queue_task_list.get()
-			data = self.task(item) or item
-			self.task_done(data)
+			task = self._queue_task_list.get()
+			data = self.task(task)
+			self.task_done(task, data)
 			self._queue_task_list.task_done()
 
-	def task(self, task):
+	def task(self, *_):
 		pass
 
 	def task_done(self, *_):
 		self._task_list_scanned_total += 1
 
-	def complete(self):
-		pass
-
 	def keyboard_interrupt(self):
-		self.logger.log('Keyboard Interrupt')
+		self.log('Keyboard Interrupt')
+
+	def complete(self):
+		self.save_list_to_file('data.lst', self.success_list())
+		self.save_list_to_file('data-failed.lst', self.failed_list())
 
 	"""
 	Extra
 	"""
+
+	def success_list(self):
+		return self._task_list_success
+
+	def failed_list(self):
+		return self._task_list_failed
 
 	def task_success(self, data):
 		self._task_list_success.append(data)
@@ -97,6 +108,9 @@ class MultiThread:
 	"""
 	Utility
 	"""
+
+	def real_path(self, name):
+		return os.path.dirname(os.path.abspath(sys.argv[0])) + '/' + name
 
 	def log_replace(self, *messages):
 		default_messages = [
@@ -119,3 +133,15 @@ class MultiThread:
 
 	def percentage_failed(self):
 		return self.percentage(len(self._task_list_failed))
+
+	def save_list_to_file(self, file_name, data_list):
+		data_list = self.filter_list(data_list)
+		data_list = [str(x) for x in data_list]
+		data_list.sort()
+
+		if not data_list:
+			return
+
+		with open(self.real_path(file_name), 'a') as file:
+			data_list = [f"# {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"] + data_list
+			file.write('\n'.join(data_list) + '\n\n')
