@@ -31,10 +31,9 @@ class MultiThread:
 		filtered_task_list = []
 
 		for item in task_list:
-			if isinstance(item, str):
-				item = item.strip()
-				if item.startswith('#'):
-					continue
+			item = str(item).strip()
+			if item.startswith('#'):
+				continue
 
 			filtered_task_list.append(item)
 
@@ -45,7 +44,7 @@ class MultiThread:
 		self._task_list_total += 1
 
 	def get_task_list(self):
-		return self.filter_list(self._task_list)
+		return self._task_list
 
 	def start(self):
 		try:
