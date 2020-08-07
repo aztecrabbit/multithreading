@@ -77,7 +77,7 @@ class MultiThread:
 			self._queue_task_list.task_done()
 
 	def task(self, *_):
-		pass
+		return False
 
 	def task_done(self, *_):
 		self._task_list_scanned_total += 1
