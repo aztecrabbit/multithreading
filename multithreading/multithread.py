@@ -82,7 +82,16 @@ class MultiThread:
 		self._task_list_scanned_total += 1
 
 	def keyboard_interrupt(self):
-		self.log('Keyboard Interrupt')
+		CC = self.logger.special_chars['CC']
+		R1 = self.logger.special_chars['R1']
+		self.log(
+			'\n'.join([
+				f'{R1}Keyboard Interrupt{CC}',
+				'  Ctrl-C again if not exiting automaticly',
+				'  Please wait...',
+				'',
+			])
+		)
 
 	def complete(self):
 		self.save_list_to_file('data.lst', self.success_list())
