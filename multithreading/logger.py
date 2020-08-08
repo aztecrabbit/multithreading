@@ -1,3 +1,4 @@
+import os
 import sys
 
 from threading import RLock
@@ -79,6 +80,11 @@ class Logger:
 		self.logger.add(sys.stderr, colorize=True, format='{extra[CR]}{extra[CN]}{message}{extra[CC]}', level=level)
 
 	def replace(self, message):
+		columns, _ = os.get_terminal_size()
+
+		if len(message) > columns:
+			message = message[:columns-3] + '...'
+
 		with self._lock:
 			sys.stdout.write(f"{self.special_chars['CN']}{message}{self.special_chars['CC']}{self.special_chars['CR']}")
 			sys.stdout.flush()
