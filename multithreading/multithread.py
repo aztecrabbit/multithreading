@@ -11,11 +11,11 @@ from .logger import Logger
 class MultiThread:
 	logger = Logger(level='DEBUG')
 
-	def __init__(self, task_list, threads=8):
+	def __init__(self, task_list=None, threads=8):
 		self._lock = RLock()
 		self._queue_task_list = Queue()
 
-		self._task_list = task_list
+		self._task_list = task_list or []
 		self._task_list_total = 0
 		self._task_list_scanned_total = 0
 		self._task_list_success = []
