@@ -11,6 +11,9 @@ from .logger import Logger
 class MultiThread:
 	logger = Logger(level='DEBUG')
 
+	file_name_success_list = None
+	file_name_failed_list = None
+
 	def __init__(self, task_list=None, threads=8):
 		self._lock = RLock()
 		self._queue_task_list = Queue()
@@ -94,8 +97,16 @@ class MultiThread:
 		)
 
 	def complete(self):
-		self.save_list_to_file('data.lst', self.success_list())
-		self.save_list_to_file('data-failed.lst', self.failed_list())
+		data_time = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+
+		if not self.file_name_success_list:
+			self.file_name_success_list = 'data'
+
+		if not self.file_name_failed_list:
+			self.file_name_failed_list = 'data-failed'
+
+		self.save_list_to_file(f'{data_time}-{self.file_name_success_list}.lst', self.success_list())
+		self.save_list_to_file(f'{data_time}-{self.file_name_failed_list}.lst', self.failed_list())
 
 	"""
 	Extra
@@ -122,13 +133,34 @@ class MultiThread:
 
 	def log_replace(self, *messages):
 		default_messages = [
+			' ',
 			f'{self.percentage_scanned():.3f}%',
+			f'{self.percentage_success():.3f}%',
 		]
 
 		self.logger.replace(' - '.join(default_messages + list(messages)))
 
 	def log(self, *args, **kwargs):
 		self.logger.log(*args, **kwargs)
+
+	def range_string(self, value, step=1):
+		data_range = [int(x) for x in value.split('-') if x]
+		data_range = list(set(data_range))
+		data_range.sort()
+
+		if not data_range:
+			return []
+
+		if len(data_range) == 1:
+			data_range.append(data_range[0])
+
+		data_range[1] += 1
+		data_range = data_range[:2]
+
+		if not step:
+			step = 1
+
+		return range(*data_range, step)
 
 	def percentage(self, data_count):
 		return (data_count / max(self._task_list_total, 1)) * 100
@@ -142,6 +174,9 @@ class MultiThread:
 	def percentage_failed(self):
 		return self.percentage(len(self._task_list_failed))
 
+	def dict_merge(self, default_data, data):
+		return {**default_data, **data}
+
 	def save_list_to_file(self, file_name, data_list):
 		data_list = self.filter_list(data_list)
 		data_list = [str(x) for x in data_list]
@@ -150,6 +185,5 @@ class MultiThread:
 		if not data_list:
 			return
 
-		with open(self.real_path(file_name), 'a') as file:
-			data_list = [f"# {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"] + data_list
-			file.write('\n'.join(data_list) + '\n\n')
+		with open(self.real_path(file_name), 'w') as file:
+			file.write('\n'.join(data_list) + '\n')
