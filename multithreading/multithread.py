@@ -105,8 +105,8 @@ class MultiThread:
 		if not self.file_name_failed_list:
 			self.file_name_failed_list = 'data-failed'
 
-		self.save_list_to_file(f'{data_time}-{self.file_name_success_list}.lst', self.success_list())
-		self.save_list_to_file(f'{data_time}-{self.file_name_failed_list}.lst', self.failed_list())
+		self.save_list_to_file(f'{self.file_name_success_list}_{data_time}.lst', self.success_list())
+		self.save_list_to_file(f'{self.file_name_failed_list}_{data_time}.lst', self.failed_list())
 
 	"""
 	Extra
