@@ -143,25 +143,6 @@ class MultiThread:
 	def log(self, *args, **kwargs):
 		self.logger.log(*args, **kwargs)
 
-	def range_string(self, value, step=1):
-		data_range = [int(x) for x in value.split('-') if x]
-		data_range = list(set(data_range))
-		data_range.sort()
-
-		if not data_range:
-			return []
-
-		if len(data_range) == 1:
-			data_range.append(data_range[0])
-
-		data_range[1] += 1
-		data_range = data_range[:2]
-
-		if not step:
-			step = 1
-
-		return range(*data_range, step)
-
 	def percentage(self, data_count):
 		return (data_count / max(self._task_list_total, 1)) * 100
 
