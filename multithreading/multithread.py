@@ -1,6 +1,7 @@
 import datetime
 import os
 import sys
+import time
 
 from queue import Queue
 from threading import Thread, RLock
@@ -138,7 +139,9 @@ class MultiThread:
 			f'{self.percentage_success():.3f}%',
 		]
 
-		self.logger.replace(' - '.join(default_messages + list(messages)))
+		messages = [str(x) for x in messages if x is not None and x != '']
+
+		self.logger.replace(' - '.join(default_messages + messages))
 
 	def log(self, *args, **kwargs):
 		self.logger.log(*args, **kwargs)
@@ -171,3 +174,9 @@ class MultiThread:
 
 		with open(self.real_path(filepath), 'w') as file:
 			file.write('\n'.join(data_list) + '\n')
+
+	def sleep(self, secs):
+		while secs > 0:
+			yield secs
+			time.sleep(1)
+			secs -= 1
