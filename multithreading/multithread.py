@@ -170,7 +170,8 @@ class MultiThread:
 			return
 
 		if dirname := os.path.dirname(filepath):
-			os.makedirs(dirname)
+			if not os.path.exists(dirname):
+				os.makedirs(dirname)
 
 		with open(self.real_path(filepath), 'w') as file:
 			file.write('\n'.join(data_list) + '\n')
