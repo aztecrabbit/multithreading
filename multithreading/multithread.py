@@ -11,8 +11,8 @@ from .logger import Logger
 class MultiThread:
 	logger = Logger(level='DEBUG')
 
-	file_name_success_list = None
-	file_name_failed_list = None
+	file_name_success_list = ''
+	file_name_failed_list = ''
 
 	def __init__(self, task_list=None, threads=8):
 		self._lock = RLock()
@@ -97,16 +97,16 @@ class MultiThread:
 		)
 
 	def complete(self):
-		data_time = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+		data_time = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
 
 		if not self.file_name_success_list:
-			self.file_name_success_list = 'data'
+			self.file_name_success_list = 'success'
 
 		if not self.file_name_failed_list:
-			self.file_name_failed_list = 'data-failed'
+			self.file_name_failed_list = 'failed'
 
-		self.save_list_to_file(f'{self.file_name_success_list}_{data_time}.lst', self.success_list())
-		self.save_list_to_file(f'{self.file_name_failed_list}_{data_time}.lst', self.failed_list())
+		self.save_list_to_file(f'storage/{self.file_name_success_list}_{data_time}.lst', self.success_list())
+		self.save_list_to_file(f'storage/{self.file_name_failed_list}_{data_time}.lst', self.failed_list())
 
 	"""
 	Extra
@@ -158,7 +158,7 @@ class MultiThread:
 	def dict_merge(self, default_data, data):
 		return {**default_data, **data}
 
-	def save_list_to_file(self, file_name, data_list):
+	def save_list_to_file(self, filepath, data_list):
 		data_list = self.filter_list(data_list)
 		data_list = [str(x) for x in data_list]
 		data_list.sort()
@@ -166,5 +166,8 @@ class MultiThread:
 		if not data_list:
 			return
 
-		with open(self.real_path(file_name), 'w') as file:
+		if dirname := os.path.dirname(filepath):
+			os.makedirs(dirname)
+
+		with open(self.real_path(filepath), 'w') as file:
 			file.write('\n'.join(data_list) + '\n')
