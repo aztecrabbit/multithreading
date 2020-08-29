@@ -15,7 +15,7 @@ class MultiThread:
 	file_name_success_list = ''
 	file_name_failed_list = ''
 
-	def __init__(self, task_list=None, threads=8):
+	def __init__(self, task_list=None, threads=None):
 		self._lock = RLock()
 		self._queue_task_list = Queue()
 
@@ -25,7 +25,7 @@ class MultiThread:
 		self._task_list_success = []
 		self._task_list_failed = []
 
-		self._threads = threads or 8
+		self._threads = threads or 16
 
 	"""
 	Core
@@ -136,7 +136,8 @@ class MultiThread:
 		default_messages = [
 			' ',
 			f'{self.percentage_scanned():.3f}%',
-			f'{self.percentage_success():.3f}%',
+			f'{self._task_list_scanned_total + 1} of {self._task_list_total}',
+			f'{len(self.success_list())}',
 		]
 
 		messages = [str(x) for x in messages if x is not None and x != '']
@@ -151,12 +152,6 @@ class MultiThread:
 
 	def percentage_scanned(self):
 		return self.percentage(self._task_list_scanned_total)
-
-	def percentage_success(self):
-		return self.percentage(len(self._task_list_success))
-
-	def percentage_failed(self):
-		return self.percentage(len(self._task_list_failed))
 
 	def dict_merge(self, default_data, data):
 		return {**default_data, **data}
