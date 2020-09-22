@@ -125,6 +125,11 @@ class MultiThread:
 	def task_failed(self, data):
 		self._task_list_failed.append(data)
 
+	def task_complete(self):
+		with self._queue_task_list.mutex:
+			self._queue_task_list.unfinished_tasks -= len(self._queue_task_list.queue)
+			self._queue_task_list.queue.clear()
+
 	"""
 	Utility
 	"""
