@@ -17,6 +17,7 @@ class MultiThread:
 
 	def __init__(self, task_list=None, threads=None):
 		self._lock = RLock()
+		self._loop = True
 		self._queue_task_list = Queue()
 
 		self._task_list = task_list or []
@@ -67,14 +68,17 @@ class MultiThread:
 
 	def join(self):
 		self._queue_task_list.join()
+		self.task_complete()
 
 	def start_threads(self):
 		for _ in range(min(self._threads, self._queue_task_list.qsize()) or self._threads):
 			Thread(target=self.start_thread, daemon=True).start()
 
 	def start_thread(self):
-		while True:
+		while self._loop:
 			task = self._queue_task_list.get()
+			if not self._loop:
+				break
 			data = self.task(task)
 			self.task_done(task, data)
 			self._queue_task_list.task_done()
@@ -127,6 +131,7 @@ class MultiThread:
 
 	def task_complete(self):
 		with self._queue_task_list.mutex:
+			self._loop = False
 			self._queue_task_list.unfinished_tasks -= len(self._queue_task_list.queue)
 			self._queue_task_list.queue.clear()
 
