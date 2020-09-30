@@ -59,9 +59,9 @@ class MultiThread:
 			self.start_threads()
 			self.join()
 		except KeyboardInterrupt:
+			self.task_complete()
 			with self._queue_task_list.mutex:
 				self.keyboard_interrupt()
-				self._queue_task_list.queue.clear()
 		finally:
 			self.complete()
 
@@ -91,7 +91,7 @@ class MultiThread:
 		self.log(
 			'\n'.join([
 				f'{R1}Keyboard Interrupt{CC}',
-				'  Ctrl-C again if not exiting automaticly',
+				'  Clearing all threads and queue',
 				'  Please wait...',
 				'',
 			])
