@@ -32,18 +32,6 @@ class MultiThread:
 	Core
 	"""
 
-	def filter_list(self, task_list):
-		filtered_task_list = []
-
-		for item in task_list:
-			item = str(item).strip()
-			if item.startswith('#'):
-				continue
-
-			filtered_task_list.append(item)
-
-		return list(set(filtered_task_list))
-
 	def add_task(self, data):
 		self._queue_task_list.put(data)
 		self._task_list_total += 1
@@ -55,51 +43,39 @@ class MultiThread:
 		try:
 			for item in self.get_task_list():
 				self._queue_task_list.put(item)
-
 			self._task_list_total = self._queue_task_list.qsize()
 			self.start_threads()
 			self.join()
 		except KeyboardInterrupt:
 			self.task_complete()
-			with self._queue_task_list.mutex:
-				self.keyboard_interrupt()
+			self.keyboard_interrupt()
 		finally:
 			self.complete()
+
+	def start_threads(self):
+		self.init()
+
+		for _ in range(min(self._threads, self._queue_task_list.qsize()) or self._threads):
+			Thread(target=self.start_thread, daemon=True).start()
+
+	def start_thread(self):
+		while self.loop():
+			task = self._queue_task_list.get()
+			if not self.loop():
+				break
+			self.task(task)
+			self._task_list_scanned_total += 1
+			self._queue_task_list.task_done()
 
 	def join(self):
 		self._queue_task_list.join()
 		self.task_complete()
 
-	def start_threads(self):
-		for _ in range(min(self._threads, self._queue_task_list.qsize()) or self._threads):
-			Thread(target=self.start_thread, daemon=True).start()
-
-	def start_thread(self):
-		while self._loop:
-			task = self._queue_task_list.get()
-			if not self._loop:
-				break
-			data = self.task(task)
-			self.task_done(task, data)
-			self._queue_task_list.task_done()
+	def init(self):
+		pass
 
 	def task(self, *_):
-		return False
-
-	def task_done(self, *_):
-		self._task_list_scanned_total += 1
-
-	def keyboard_interrupt(self):
-		CC = self.logger.special_chars['CC']
-		R1 = self.logger.special_chars['R1']
-		self.log(
-			'\n'.join([
-				f'{R1}Keyboard Interrupt{CC}',
-				'  Clearing all threads and queue',
-				'  Please wait...',
-				'',
-			])
-		)
+		pass
 
 	def complete(self):
 		data_time = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
@@ -117,6 +93,15 @@ class MultiThread:
 	Extra
 	"""
 
+	def lock(self):
+		return self._lock
+
+	def lock_queue(self):
+		return self._queue_task_list.mutex
+
+	def loop(self):
+		return self._loop
+
 	def success_list(self):
 		return self._task_list_success
 
@@ -130,17 +115,32 @@ class MultiThread:
 		self._task_list_failed.append(data)
 
 	def task_complete(self):
-		with self._queue_task_list.mutex:
-			self._loop = False
+		self._loop = False
+
+		with self.lock_queue():
 			self._queue_task_list.unfinished_tasks -= len(self._queue_task_list.queue)
 			self._queue_task_list.queue.clear()
+
+	def keyboard_interrupt(self):
+		CC = self.logger.special_chars['CC']
+		R1 = self.logger.special_chars['R1']
+
+		with self.lock_queue():
+			self.log(
+				'\n'.join([
+					f'{R1}Keyboard Interrupt{CC}',
+					'  Clearing all threads and queue',
+					'  Please wait...',
+					'',
+				])
+			)
 
 	"""
 	Utility
 	"""
 
-	def real_path(self, name):
-		return os.path.dirname(os.path.abspath(sys.argv[0])) + '/' + name
+	def log(self, *args, **kwargs):
+		self.logger.log(*args, **kwargs)
 
 	def log_replace(self, *messages):
 		default_messages = [
@@ -150,21 +150,44 @@ class MultiThread:
 			f'{len(self.success_list())}',
 		]
 
-		messages = [str(x) for x in messages if x is not None and x != '']
+		messages = [str(x) for x in messages if x is not None and str(x)]
 
 		self.logger.replace(' - '.join(default_messages + messages))
 
-	def log(self, *args, **kwargs):
-		self.logger.log(*args, **kwargs)
+	def real_path(self, name):
+		return os.path.dirname(os.path.abspath(sys.argv[0])) + '/' + name
+
+	def filter_list(self, data):
+		filtered_data = []
+
+		for item in data:
+			item = str(item).strip()
+			if item.startswith('#'):
+				continue
+			filtered_data.append(item)
+
+		return list(set(filtered_data))
+
+	def dict_merge(self, default_data, data):
+		if not isinstance(default_data, dict):
+			default_data = {}
+
+		if not isinstance(data, dict):
+			data = {}
+
+		return {**default_data, **data}
+
+	def sleep(self, seconds):
+		while seconds > 0:
+			yield seconds
+			time.sleep(1)
+			seconds -= 1
 
 	def percentage(self, data_count):
 		return (data_count / max(self._task_list_total, 1)) * 100
 
 	def percentage_scanned(self):
 		return self.percentage(self._task_list_scanned_total)
-
-	def dict_merge(self, default_data, data):
-		return {**default_data, **data}
 
 	def save_list_to_file(self, filepath, data_list):
 		data_list = self.filter_list(data_list)
@@ -180,9 +203,3 @@ class MultiThread:
 
 		with open(self.real_path(filepath), 'w') as file:
 			file.write('\n'.join(data_list) + '\n')
-
-	def sleep(self, secs):
-		while secs > 0:
-			yield secs
-			time.sleep(1)
-			secs -= 1

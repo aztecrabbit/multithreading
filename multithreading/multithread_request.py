@@ -43,11 +43,11 @@ class MultiThreadRequest(MultiThread):
 				retry -= retry_decrease or 0
 
 			except requests.exceptions.ReadTimeout:
-				retry_decrease = self.request_connection_error(request_id, method, url, **kwargs)
+				retry_decrease = self.request_read_timeout(request_id, method, url, **kwargs)
 				retry -= retry_decrease or 0
 
 			except requests.exceptions.Timeout:
-				retry_decrease = self.request_connection_error(request_id, method, url, **kwargs)
+				retry_decrease = self.request_timeout(request_id, method, url, **kwargs)
 				retry -= retry_decrease or 0
 
 		return None
