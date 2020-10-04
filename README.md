@@ -47,6 +47,9 @@ demo.add_task(1)
 demo.add_task(2)
 demo.add_task(3)
 
+# Wait until queue is empty
+demo.join()
+
 ```
 
 Result
