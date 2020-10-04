@@ -6,31 +6,20 @@ from threading import RLock
 from loguru import logger
 
 special_chars_code = {
-	# Disabled
-	'D': '30',
-	# Red
-	'R': '31',
-	# Green
-	'G': '32',
-	# Yellow
-	'Y': '33',
-	# Blue
-	'B': '34',
-	# Purple
-	'P': '35',
-	# Cyan
-	'C': '36',
-	# White
-	'W': '37',
+	'D': '30',  # Disabled
+	'R': '31',  # Red
+	'G': '32',  # Green
+	'Y': '33',  # Yellow
+	'B': '34',  # Blue
+	'P': '35',  # Purple
+	'C': '36',  # Cyan
+	'W': '37',  # White
 }
 
 special_chars = {
-	# Clear Color
-	'CC': '\033[0m',
-	# Clear Line
-	'CN': '\033[2K',
-	# To First Line
-	'CR': '\r',
+	'CC': '\033[0m',  # Clear Color
+	'CN': '\033[2K',  # Clear Line
+	'CR': '\r',  # To First Line
 }
 
 
@@ -83,10 +72,14 @@ class Logger:
 		columns, _ = os.get_terminal_size()
 
 		if len(message) > columns:
-			message = message[:columns-3] + '...'
+			message = message[:columns - 3] + '...'
+
+		CN = self.special_chars['CN']
+		CC = self.special_chars['CC']
+		CR = self.special_chars['CR']
 
 		with self._lock:
-			sys.stdout.write(f"{self.special_chars['CN']}{message}{self.special_chars['CC']}{self.special_chars['CR']}")
+			sys.stdout.write(f'{CN}{message}{CC}{CR}')
 			sys.stdout.flush()
 
 	def log(self, message, level='INFO'):
