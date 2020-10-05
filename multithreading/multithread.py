@@ -146,7 +146,7 @@ class MultiThread:
 		default_messages = [
 			' ',
 			f'{self.percentage_scanned():.3f}%',
-			f'{self._task_list_scanned_total + 1} of {self._task_list_total}',
+			f'{self._task_list_scanned_total} of {self._task_list_total}',
 			f'{len(self.success_list())}',
 		]
 
