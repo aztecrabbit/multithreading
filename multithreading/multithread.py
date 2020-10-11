@@ -44,9 +44,8 @@ class MultiThread:
 
 	def start(self):
 		try:
-			for item in self.get_task_list():
-				self._queue_task_list.put(item)
-			self._task_list_total = self._queue_task_list.qsize()
+			for task in self.get_task_list():
+				self.add_task(task)
 			self.init()
 			self.start_threads()
 			self.join()
