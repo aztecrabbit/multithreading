@@ -32,6 +32,9 @@ class MultiThread:
 	Core
 	"""
 
+	def set_threads(self, threads):
+		self._threads = threads or self._threads
+
 	def add_task(self, data):
 		self._queue_task_list.put(data)
 		self._task_list_total += 1
@@ -41,9 +44,9 @@ class MultiThread:
 
 	def start(self):
 		try:
-			for item in self.get_task_list():
-				self._queue_task_list.put(item)
-			self._task_list_total = self._queue_task_list.qsize()
+			for task in self.get_task_list():
+				self.add_task(task)
+			self.init()
 			self.start_threads()
 			self.join()
 		except KeyboardInterrupt:
@@ -53,12 +56,10 @@ class MultiThread:
 			self.complete()
 
 	def start_threads(self):
-		self.init()
-
 		for _ in range(min(self._threads, self._queue_task_list.qsize()) or self._threads):
-			Thread(target=self.start_thread, daemon=True).start()
+			Thread(target=self.thread, daemon=True).start()
 
-	def start_thread(self):
+	def thread(self):
 		while self.loop():
 			task = self._queue_task_list.get()
 			if not self.loop():
@@ -67,15 +68,15 @@ class MultiThread:
 			self._task_list_scanned_total += 1
 			self._queue_task_list.task_done()
 
-	def join(self):
-		self._queue_task_list.join()
-		self.task_complete()
-
 	def init(self):
 		pass
 
 	def task(self, *_):
 		pass
+
+	def join(self):
+		self._queue_task_list.join()
+		self.task_complete()
 
 	def complete(self):
 		data_time = datetime.datetime.now().strftime('%Y%m%d-%H%M%S')
