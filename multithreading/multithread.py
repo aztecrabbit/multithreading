@@ -32,6 +32,9 @@ class MultiThread:
 	Core
 	"""
 
+	def set_threads(self, threads):
+		self._threads = threads or self._threads
+
 	def add_task(self, data):
 		self._queue_task_list.put(data)
 		self._task_list_total += 1
