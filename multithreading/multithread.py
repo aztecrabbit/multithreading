@@ -155,8 +155,8 @@ class MultiThread:
 
 		self.logger.replace(' - '.join(default_messages + messages))
 
-	def real_path(self, name):
-		return os.path.dirname(os.path.abspath(sys.argv[0])) + '/' + name
+	def real_path(self, name=''):
+		return os.path.dirname(os.path.abspath(sys.argv[0])) + (f'/{name}' if name else '')
 
 	def filter_list(self, data):
 		filtered_data = []
