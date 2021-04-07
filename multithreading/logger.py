@@ -37,10 +37,12 @@ def get_special_char(key=None, char_type=1):
 	7 = reverse
 	```
 	"""
-	if (special_char := special_chars.get(key)) is not None:
+	special_char = special_chars.get(key)
+	if special_char is not None:
 		return special_char
 
-	if key is not None and (char_code := special_chars_code.get(key)) is not None:
+	char_code = special_chars_code.get(key)
+	if key is not None and char_code is not None:
 		return f'\033[{char_code};{char_type}m'
 
 	return f'\033[{char_type}m'

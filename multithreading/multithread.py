@@ -198,7 +198,8 @@ class MultiThread:
 		if not data_list:
 			return
 
-		if dirname := os.path.dirname(filepath):
+		dirname = os.path.dirname(filepath)
+		if dirname:
 			if not os.path.exists(dirname):
 				os.makedirs(dirname)
 

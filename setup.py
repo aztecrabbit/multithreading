@@ -5,7 +5,7 @@ with open('README.md', 'r') as fh:
 
 setuptools.setup(
 	name='multithreading',
-	version='0.1.9',
+	version='0.2.0',
 	author='aztecrabbit',
 	author_email='ars.xda@gmail.com',
 	description='MultiThreading: Thread + Queue',
@@ -18,5 +18,5 @@ setuptools.setup(
 		'License :: OSI Approved :: MIT License',
 		'Operating System :: OS Independent',
 	],
-	python_requires='>=3.8',
+	python_requires='>=3.6',
 )
